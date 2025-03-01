@@ -24,12 +24,11 @@ def send_telegram_message(bot_token, chat_id, message):
         "chat_id": chat_id,
         "text": message
     }
-    response = requests.post(url, json=payload)
 
-    if response.status_code == 200:
-        print("Message sent successfully!")
-    else:
-        print(f"Failed to send message. Status code: {response.status_code}")
-        print(response.json())
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to send message: {e}")
 
 send_telegram_message(BOT_TOKEN, CHAT_ID, "Hello World!")
