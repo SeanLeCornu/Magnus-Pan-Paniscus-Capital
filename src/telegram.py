@@ -1,5 +1,12 @@
-import requests
+"""
+Telegram Bot Module
+
+This module provides functionality to interact with the Telegram Bot API. It allows sending messages
+to a specified chat using a bot token and chat ID. The module is designed to be simple and reusable.
+"""
+
 import os
+import requests
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
@@ -12,19 +19,13 @@ def send_telegram_message(bot_token, chat_id, message):
     :param chat_id: The chat ID of the recipient.
     :param message: The message to send.
     """
-    # Telegram Bot API endpoint
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-
-    # Payload to send
     payload = {
         "chat_id": chat_id,
         "text": message
     }
-
-    # Send the request
     response = requests.post(url, json=payload)
 
-    # Check if the message was sent successfully
     if response.status_code == 200:
         print("Message sent successfully!")
     else:
