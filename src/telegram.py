@@ -37,7 +37,7 @@ def send_telegram_message(bot_token, chat_id, message):
 
 
 deribit_client = DeribitAPI(DERIBIT_API_KEY, DERIBIT_API_SECRET)
-BTC_price = deribit_client.get_public_data("btc_usd")["result"]["index_price"]
+BTC_price = deribit_client.get_public_data("btc_usd")["index_price"]
 
 send_telegram_message(BOT_TOKEN, CHAT_ID,
                       "Hello Sean, the price of Bitcoin this morning is: "
