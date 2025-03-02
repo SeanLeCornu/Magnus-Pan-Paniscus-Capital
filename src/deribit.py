@@ -83,12 +83,14 @@ class DeribitAPI:
             return None
 
     def get_account_balance(self, currency):
-        """Fetch account balance for a specific currency."""
-        api_url = f"https://www.deribit.com/api/v2/private/get_account_summary?currency={currency}"
+        """Fetch account balance for a specific currency. Private end points need www. added..."""
+        endpoint = (f"{self.base_url[:8]}www.{self.base_url[8:]}"
+                    f"/private/get_account_summary?currency={currency}")
+
         headers = {
             "Authorization": f"Bearer {self.access_token}",
         }
-        resp = requests.get(api_url, headers=headers, timeout=10)
+        resp = requests.get(endpoint, headers=headers, timeout=10)
         data = resp.json()
         return data["result"]['equity']
 
