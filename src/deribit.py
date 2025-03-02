@@ -1,10 +1,20 @@
-import requests
+"""
+Deribit API Module
+
+A Python module for interacting with the Deribit API. This module provides a class
+to handle authentication, fetch public data (e.g., index prices), and retrieve
+account summaries for authenticated users.
+
+Author: Sean Le Cornu
+Date: 2025-03-02
+Version: 1.0
+"""
+
+import os
 import hmac
 import hashlib
 import time
-import json
-import os
-
+import requests
 
 # Deribit API credentials
 BASE_URL = "https://deribit.com/api/v2"
@@ -12,6 +22,20 @@ DERIBIT_API_KEY = os.getenv("DERIBIT_API_KEY")
 DERIBIT_API_SECRET = os.getenv("DERIBIT_API_SECRET")
 
 class DeribitAPI:
+    """
+        A class to interact with the Deribit API.
+
+        Attributes:
+            api_key (str): The API key for Deribit authentication.
+            api_secret (str): The API secret for Deribit authentication.
+            base_url (str): The base URL for the Deribit API (default is v2).
+
+        Methods:
+            get_public_data(index): Fetches public data (e.g., index price) for a given index.
+            get_account_summary(currency): Retrieves the account summary for a specific currency.
+            _generate_signature(params): Generates an HMAC signature for authentication.
+        """
+
     def __init__(self, api_key, api_secret, base_url=BASE_URL):
         """Initialize the DeribitAPI class with API credentials."""
         self.api_key = api_key
@@ -33,12 +57,11 @@ class DeribitAPI:
             "index_name": index
         }
 
-        response = requests.get(endpoint, params=params)
+        response = requests.get(endpoint, params=params, timeout=5)
         if response.status_code == 200:
             return response.json()
-        else:
-            print(f"Error: {response.status_code}")
-            return None
+        print(f"Error: {response.status_code}")
+        return None
 
     def get_account_summary(self, currency="BTC"):
         """Fetch account summary for a specific currency (BTC or ETH)."""
@@ -62,14 +85,13 @@ class DeribitAPI:
         }
 
         # Make the API request
-        response = requests.get(endpoint, headers=headers, params=params)
+        response = requests.get(endpoint, headers=headers, params=params, timeout=5)
 
         if response.status_code == 200:
             return response.json()
-        else:
-            print(f"Error: {response.status_code}")
-            print(response.text)
-            return None
+        print(f"Error: {response.status_code}")
+        print(response.text)
+        return None
 
 
 # Example Usage
@@ -80,7 +102,3 @@ if __name__ == "__main__":
 
     account_summary = deribit_client.get_account_summary("BTC")
     print("Account Summary:", account_summary)
-
-
-
-
