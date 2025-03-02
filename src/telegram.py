@@ -7,6 +7,7 @@ to a specified chat using a bot token and chat ID. The module is designed to be 
 
 import os
 import requests
+from src.deribit import DeribitAPI, DERIBIT_API_KEY, DERIBIT_API_SECRET, BASE_URL
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
@@ -31,4 +32,9 @@ def send_telegram_message(bot_token, chat_id, message):
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to send message: {e}")
 
-send_telegram_message(BOT_TOKEN, CHAT_ID, "Hello World!")
+
+deribit_client = DeribitAPI(DERIBIT_API_KEY, DERIBIT_API_SECRET)
+BTC_price = deribit_client.get_public_data("btc_usd")["result"]["index_price"]
+
+send_telegram_message(BOT_TOKEN, CHAT_ID,
+                      "Hello Sean, the price of Bitcoin this morning is: " + str(round(BTC_price,1)) )

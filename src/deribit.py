@@ -7,82 +7,80 @@ import os
 
 
 # Deribit API credentials
+BASE_URL = "https://deribit.com/api/v2"
 DERIBIT_API_KEY = os.getenv("DERIBIT_API_KEY")
 DERIBIT_API_SECRET = os.getenv("DERIBIT_API_SECRET")
-BASE_URL = "https://deribit.com/api/v2"
 
-def deribit_generate_signature(secret, params):
-    """Generate HMAC signature for authentication."""
-    return hmac.new(
-        secret.encode('utf-8'),
-        params.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
+class DeribitAPI:
+    def __init__(self, api_key, api_secret, base_url=BASE_URL):
+        """Initialize the DeribitAPI class with API credentials."""
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.base_url = base_url
 
-def deribit_get_public_data(index):
-    endpoint = f"{BASE_URL}/public/get_index_price"
-    params = {
-        "index_name": index
-    }
+    def _generate_signature(self, params):
+        """Generate HMAC signature for authentication."""
+        return hmac.new(
+            self.api_secret.encode('utf-8'),
+            params.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
 
-    response = requests.get(endpoint, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error: {response.status_code}")
-        return None
+    def get_public_data(self, index):
+        """Fetch public data (e.g., index price) from Deribit."""
+        endpoint = f"{self.base_url}/public/get_index_price"
+        params = {
+            "index_name": index
+        }
 
-def deribit_get_account_summary(currency="BTC"):
-    """Fetch account summary for a specific currency (BTC or ETH)."""
-    endpoint = f"{BASE_URL}/private/get_account_summary"
+        response = requests.get(endpoint, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error: {response.status_code}")
+            return None
 
-    # Required parameters
-    params = {
-        "currency": currency,  # Can be "BTC" or "ETH"
-        "nonce": str(int(time.time() * 1000))  # Unique nonce
-    }
+    def get_account_summary(self, currency="BTC"):
+        """Fetch account summary for a specific currency (BTC or ETH)."""
+        endpoint = f"{self.base_url}/private/get_account_summary"
 
-    # Generate signature
-    params['sig'] = deribit_generate_signature(
-        DERIBIT_API_SECRET,
-        f"{params['nonce']}{params['currency']}"
-    )
+        # Required parameters
+        params = {
+            "currency": currency,  # Can be "BTC" or "ETH"
+            "nonce": str(int(time.time() * 1000))  # Unique nonce
+        }
 
-    # Headers for authentication
-    headers = {
-        "Authorization": f"Bearer {DERIBIT_API_KEY}",
-        "Content-Type": "application/json"
-    }
+        # Generate signature
+        params['sig'] = self._generate_signature(
+            f"{params['nonce']}{params['currency']}"
+        )
 
-    # Make the API request
-    response = requests.get(endpoint, headers=headers, params=params)
+        # Headers for authentication
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
 
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error: {response.status_code}")
-        print(response.text)
-        return None
+        # Make the API request
+        response = requests.get(endpoint, headers=headers, params=params)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error: {response.status_code}")
+            print(response.text)
+            return None
 
 
-
-# Example usage
+# Example Usage
 if __name__ == "__main__":
-    data = deribit_get_public_data("btc_usd")["result"]["index_price"]
-    print(json.dumps(data, indent=2))
+    deribit_client = DeribitAPI(DERIBIT_API_KEY, DERIBIT_API_SECRET)
+    index_price_data = deribit_client.get_public_data("btc_usd")["result"]["index_price"]
+    print("Index Price Data:", index_price_data)
 
-    account_summary = deribit_get_account_summary(currency="BTC")
+    account_summary = deribit_client.get_account_summary("BTC")
     print("Account Summary:", account_summary)
 
-   # print(json.dumps(account_summary, indent=2))
-
-  #  result = account_summary.get("result", {})
-  #  print("\nKey Details:")
-  #  print(f"Balance: {result.get('balance', 'N/A')} BTC")
-  #  print(f"Available Funds: {result.get('available_funds', 'N/A')} BTC")
-  #  print(f"Equity: {result.get('equity', 'N/A')} BTC")
-  #  print(f"Initial Margin: {result.get('initial_margin', 'N/A')} BTC")
-  #  print(f"Maintenance Margin: {result.get('maintenance_margin', 'N/A')} BTC")
 
 
 
